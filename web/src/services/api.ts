@@ -872,6 +872,7 @@ export async function sendChat(message: string, currentFinancials: UserFinancial
   // Free-form questions only reach the model. Build the deterministic computed block —
   // the ONLY numbers the model may use. Raw SMS or transaction text is never sent.
   const computed = {
+    currency: '¥',
     cash: currentFinancials.cash,
     daysToPayday: currentFinancials.daysToPayday,
     committedBills: currentFinancials.committedBills,
