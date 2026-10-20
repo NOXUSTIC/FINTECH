@@ -20,3 +20,5 @@ web/.aistudio/
 *.db
 patch_page.py
 rm_sample.py
+
+.vercel

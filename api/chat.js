@@ -28,6 +28,24 @@ module.exports = async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
+  // Same-origin guard: reject cross-origin browser requests so third-party sites
+  // can't spend the DeepSeek quota. Requests with no Origin (curl, server-to-server)
+  // and localhost (dev) are allowed.
+  const origin = req.headers.origin;
+  if (origin) {
+    let originHost = '';
+    try {
+      originHost = new URL(origin).host;
+    } catch {
+      originHost = '';
+    }
+    const isLocalhost = /^(localhost|127\.0\.0\.1)(:\d+)?$/.test(originHost);
+    const isSameOrigin = originHost === (req.headers.host || '');
+    if (!isLocalhost && !isSameOrigin) {
+      return res.status(403).json({ error: 'Forbidden origin' });
+    }
+  }
+
   const msgs = req.body && req.body.messages;
   if (!Array.isArray(msgs) || !msgs.length) return res.status(400).json({ error: 'messages required' });
 

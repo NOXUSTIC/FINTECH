@@ -189,3 +189,14 @@ Set these on the Vercel project **Environment Variables** page. They are **never
 **What is sent to the model:** only the user's free-form question plus a deterministic "computed block" of the locally-calculated numbers (cash, days-to-payday, committed bills, daily baseline, safe-to-spend, savings, income, spending style). **What is never sent:** raw SMS or transaction text, action payloads, or injection strings — those are handled by the local permission gate and never reach the model.
 
 **Fallback behavior:** if `/api/chat` is unconfigured, fails, times out (8 seconds), or returns empty text, the app falls back to the deterministic mock assistant and the chat badge shows `Mock provider (demo mode)`. It shows `DeepSeek` only when DeepSeek actually answered.
+
+### Chat model (DeepSeek) key rotation
+
+The live site reads `LLM_KEY` from Vercel (Production). To rotate the key without downtime:
+
+1. Create a new key at [platform.deepseek.com](https://platform.deepseek.com) → **API Keys**.
+2. Update `LLM_KEY` in Vercel → **Settings → Environment Variables** (environment must be **Production**, not Preview).
+3. Redeploy — environment variable changes only apply to new deployments (`vercel --prod`, or **Deployments → Redeploy**).
+4. Delete the old key in DeepSeek.
+
+If the key is missing or invalid, `/api/chat` fails and the app falls back to the mock assistant (`Mock provider (demo mode)`) — the site stays up.
