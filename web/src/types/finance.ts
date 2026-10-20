@@ -131,6 +131,7 @@ export interface AgentMessage {
   isInjectionFlagged?: boolean;
   isBlocked?: boolean;
   isOverridden?: boolean;
+  provider?: string;
 }
 
 export interface ImportTransaction {

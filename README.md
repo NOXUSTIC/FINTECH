@@ -24,7 +24,7 @@ All figures, savings targets, and purchase affordability verdicts are computed d
 ```text
 .
 ├── api/                             # Vercel serverless backend
-│   └── chat.js                      # Serverless LLM proxy (supports vLLM and Anthropic)
+│   └── chat.js                      # Serverless LLM proxy (OpenAI-compatible, e.g. DeepSeek)
 ├── docs/                            # In-depth architectural & security specifications
 │   ├── TECHNICAL_DOCUMENTATION.md   # System diagram, safe-to-spend formula, facts engine
 │   └── SECURITY_SELF_ASSESSMENT.md  # T0-T4 tiers, blocked actions, known risks & limits
@@ -73,8 +73,8 @@ To maintain full transparency, here is the exact breakdown of real calculations 
 | **Purchase Affordability Check** | **Real** | Computed via `computePurchase`. Compares after-purchase savings directly against 20% savings target to derive exact verdicts (`ok`, `stretch`, `wait`). |
 | **Product Pricing & Discovery** | **Fallback only, no live price service deployed** | Scraper and discovery logic exists in `pricing.py`, but no live `/api/price` service is deployed in production; app uses offline pricing fallback. |
 | **Cryptographic Audit Trail** | **Real** | Every log entry is hashed with Web Crypto API `crypto.subtle` SHA-256, chained to genesis block `000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f` with live tamper detection. |
-| **AI Conversational Chat (`/chat`)** | **Hybrid** | Calls `/api/chat` (vLLM or Anthropic API) when configured. Instantly falls back to deterministic rule-based assistant if offline, unconfigured, or timed out. |
-| **AI Provider Badge** | **Configurable** | Defaults to `Mock provider (demo mode)` requiring **no internet and no API key**. Displays active provider only when `VITE_AI_PROVIDER` is set. |
+| **AI Conversational Chat (`/chat`)** | **Hybrid** | Free-form questions call `/api/chat` (OpenAI-compatible, e.g. DeepSeek via `LLM_URL`/`LLM_MODEL`). Actions and injection checks always run in the local permission gate first. Instantly falls back to the deterministic mock assistant if offline, unconfigured, timed out, or empty. |
+| **AI Provider Badge** | **Configurable** | Chat badge shows `DeepSeek` only when DeepSeek actually answered; otherwise it shows `Mock provider (demo mode)`. The purchase-check badge still reads `VITE_AI_PROVIDER`. |
 | **Prompt Injection Defense** | **Rule-based filter (exact phrases)** | Rule-based security shield catches override patterns (`ignore rules`, `transfer 2000`) before data reaches any model or database. |
 | **Bank / SMS Import** | **Simulated** | Demonstrates multi-channel import, rule-based duplicate detection/merging, and untrusted payload filtering. |
 | **Money Movement & Bill Pay** | **Simulated** | T3 sandbox transfers (capped at ¥500/day) and T4 draft bill payment with interactive PIN challenge modal. |
@@ -177,11 +177,15 @@ The project is pre-configured with a root `vercel.json` file that instructs Verc
    - **Functions**: Serverless handlers in `api/` (e.g. `api/chat.js`) are automatically deployed.
 6. Click **Deploy**.
 
-### Optional Environment Variables
+### Optional Environment Variables (Vercel only)
 
-If connecting to a live language model in Vercel:
-- `LLM_URL`: Base URL of OpenAI-compatible model server (e.g. `http://host:8000/v1` or vLLM).
-- `LLM_MODEL`: Model name (default `finance-llm`).
-- `LLM_KEY`: Optional Bearer authentication token.
-- `ANTHROPIC_API_KEY`: Anthropic API key for fallback provider (`claude-sonnet-5-5`).
-- `VITE_AI_PROVIDER`: Name of provider to show in UI badge (e.g. `Anthropic Claude Sonnet` or `Local vLLM`). If omitted, badge displays `Mock provider (demo mode)`.
+Set these on the Vercel project **Environment Variables** page. They are **never committed** and are **never exposed to the browser** — only the serverless `api/chat.js` function reads them.
+
+- `LLM_URL`: OpenAI-compatible base URL, e.g. `https://api.deepseek.com/v1`.
+- `LLM_KEY`: Bearer token for the LLM (secret — Vercel only).
+- `LLM_MODEL`: Model name served by the LLM, e.g. `deepseek-chat`. There is no hardcoded default.
+- `ANTHROPIC_API_KEY` / `ANTHROPIC_MODEL`: Legacy fallback provider, used only when `LLM_URL` is not set.
+
+**What is sent to the model:** only the user's free-form question plus a deterministic "computed block" of the locally-calculated numbers (cash, days-to-payday, committed bills, daily baseline, safe-to-spend, savings, income, spending style). **What is never sent:** raw SMS or transaction text, action payloads, or injection strings — those are handled by the local permission gate and never reach the model.
+
+**Fallback behavior:** if `/api/chat` is unconfigured, fails, times out (8 seconds), or returns empty text, the app falls back to the deterministic mock assistant and the chat badge shows `Mock provider (demo mode)`. It shows `DeepSeek` only when DeepSeek actually answered.

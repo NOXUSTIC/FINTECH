@@ -80,12 +80,15 @@ This section documents what is implemented, where it lives in the code, and what
 
 ### Risk 4: Personal Financial Data (PII) Sent to Remote AI Models
 - **What is Implemented**:
-  - The default AI provider is hardcoded to \`"Mock provider (demo mode)"\`. In this default mode, zero network calls are made and zero data leaves the user's browser.
+  - The chat model is contacted **only for free-form questions**, and only the question from the user plus a deterministic computed block of locally-calculated numbers (cash, days-to-payday, committed bills, daily baseline, safe-to-spend, savings, income, spending style) is transmitted.
+  - Raw SMS or transaction text, action payloads, and injection strings are handled by the local permission gate and are **never sent to the model**.
+  - The API key (`LLM_KEY`) lives in **Vercel environment variables only** and is never exposed to the browser or committed to the repo.
+  - If `/api/chat` is unconfigured, fails, times out (8s), or returns empty text, the app falls back to the deterministic mock assistant and no external call succeeds.
 - **Where in Code**:
-  - [\`web/src/services/api.ts\`](../web/src/services/api.ts#L32) (\`AI_PROVIDER_BADGE\`)
-  - [\`api/chat.js\`](../api/chat.js#L5)
+  - [`web/src/services/api.ts`](../web/src/services/api.ts) (`sendChat` builds the computed block and calls `/api/chat`)
+  - [`api/chat.js`](../api/chat.js) (serverless proxy; reads `LLM_URL` / `LLM_KEY` / `LLM_MODEL` from Vercel env only)
 - **What is NOT Covered**:
-  - **Limitation**: If a developer configures \`LLM_URL\` or \`ANTHROPIC_API_KEY\`, user chat messages are sent over HTTP/HTTPS to that external service. There is no automated PII scrubber (e.g. masking account numbers or names) before transmission.
+  - **Limitation**: If a developer configures `LLM_URL` (and optionally `LLM_KEY`), the free-form question and computed numbers are sent over HTTPS to that external service. There is no automated PII scrubber (e.g. masking account numbers or names) beyond the rule of never sending raw transaction text.
 
 ---
 

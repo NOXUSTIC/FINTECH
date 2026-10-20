@@ -869,15 +869,31 @@ export async function sendChat(message: string, currentFinancials: UserFinancial
     };
   }
 
-  // Connect to real /api/chat with resilient fallback (Phase C integration)
+  // Free-form questions only reach the model. Build the deterministic computed block —
+  // the ONLY numbers the model may use. Raw SMS or transaction text is never sent.
+  const computed = {
+    cash: currentFinancials.cash,
+    daysToPayday: currentFinancials.daysToPayday,
+    committedBills: currentFinancials.committedBills,
+    dailyBaseline: currentFinancials.dailyBaseline,
+    safeToSpend: currentFinancials.safeToSpend,
+    safeToday: currentFinancials.safeToday,
+    savingsPot: currentFinancials.savingsPot,
+    savingsGoal: currentFinancials.savingsGoal,
+    monthlyIncome: currentFinancials.monthlyIncome,
+    spendingStyle: currentFinancials.spendingStyle,
+  };
+
+  // Connect to the real /api/chat (DeepSeek) with resilient mock fallback.
   try {
     const ctrl = new AbortController();
-    const timeout = setTimeout(() => ctrl.abort(), 3500);
+    const timeout = setTimeout(() => ctrl.abort(), 8000);
     const res = await fetch('/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         messages: [{ role: 'user', content: message }],
+        computed,
       }),
       signal: ctrl.signal,
     }).catch(() => null);
@@ -892,6 +908,7 @@ export async function sendChat(message: string, currentFinancials: UserFinancial
           text: data.text.trim(),
           timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
           tier: 'T0',
+          provider: data.provider || 'DeepSeek',
         };
       }
     }
@@ -907,6 +924,7 @@ export async function sendChat(message: string, currentFinancials: UserFinancial
       text: `Your safe runway is ¥${currentFinancials.safeToSpend} (¥${currentFinancials.safeToday}/day). It accounts for your ¥${currentFinancials.committedBills} committed bills due in days 3 and 6, and reserves ¥${currentFinancials.dailyBaseline}/day for meals and metro until payday.`,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       tier: 'T0',
+      provider: 'Mock provider (demo mode)',
     };
   }
 
@@ -918,6 +936,7 @@ export async function sendChat(message: string, currentFinancials: UserFinancial
     text: `I'm analyzing your cash trajectory. Your current safe buffer is ¥${currentFinancials.safeToSpend} across ${currentFinancials.daysToPayday} days until payday. Ask me to simulate a purchase, pause subscriptions, or draft a bill payment.`,
     timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     tier: 'T1',
+    provider: 'Mock provider (demo mode)',
   };
 }
 

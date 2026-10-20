@@ -135,14 +135,22 @@ export const AgentScreen: React.FC = () => {
 
                 {/* Tier Badge */}
                 {!isUser && msg.tier && (
-                  <div className="mt-2.5 pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
-                    <span
-                      className={`text-[10px] font-mono font-semibold px-2 py-0.5 rounded-md border ${getTierColor(
-                        msg.tier
-                      )}`}
-                    >
-                      {getTierDescription(msg.tier)}
-                    </span>
+                  <div className="mt-2.5 pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span
+                        className={`text-[10px] font-mono font-semibold px-2 py-0.5 rounded-md border ${getTierColor(
+                          msg.tier
+                        )}`}
+                      >
+                        {getTierDescription(msg.tier)}
+                      </span>
+
+                      {msg.provider && (
+                        <span className="text-[10px] font-mono text-slate-500 bg-white dark:bg-slate-800 px-1.5 py-0.5 rounded-md border border-slate-200 dark:border-slate-600">
+                          {msg.provider}
+                        </span>
+                      )}
+                    </div>
 
                     {msg.isInjectionFlagged && (
                       <span className="text-[10px] text-rose-600 dark:text-rose-400 font-medium">
