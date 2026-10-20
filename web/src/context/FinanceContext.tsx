@@ -71,7 +71,7 @@ interface FinanceContextType {
   coverage: { alipay: boolean; wechat: boolean; sms: boolean };
   isImportModalOpen: boolean;
   setIsImportModalOpen: (open: boolean) => void;
-  handleImport: (source: 'Alipay' | 'WeChat' | 'SMS', payload: string) => Promise<{ success: boolean; duplicateNotice?: string; injectionFlagged?: boolean }>;
+  handleImport: (source: 'Alipay' | 'WeChat' | 'SMS', payload: string) => Promise<{ success: boolean; duplicateNotice?: string; injectionFlagged?: boolean; transactions?: ImportTransaction[] }>;
   updateTransactionCategory: (txId: string, newCategory: string) => void;
   
   // Onboarding
@@ -489,6 +489,7 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
       success: result.success,
       duplicateNotice: result.duplicateNotice,
       injectionFlagged: result.injectionFlagged,
+      transactions: result.transactions,
     };
   };
 

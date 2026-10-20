@@ -9,6 +9,7 @@ import {
   verifyChain,
   sendChat,
   importData,
+  getInsights,
 } from './api';
 
 describe('ProAct Finance - Financial Engine Tests', () => {
@@ -148,5 +149,27 @@ describe('ProAct Finance - Financial Engine Tests', () => {
     } finally {
       vi.unstubAllGlobals();
     }
+  });
+
+  it('parses an imported SMS into amount, merchant, date, and confidence', async () => {
+    const res = await importData(
+      'SMS',
+      '[China Merchants Bank] You spent ¥38.00 at Manner Coffee on Oct 20 at 08:30.'
+    );
+
+    expect(res.transactions).toHaveLength(1);
+    const tx = res.transactions[0];
+    expect(tx.amount).toBe(38.0);
+    expect(tx.merchant).toBe('Manner Coffee');
+    expect(tx.date).toBe('2026-10-20');
+    expect(tx.confidence).toBe('High');
+    expect(res.hasDuplicateMerge).toBe(true);
+    expect(res.duplicateNotice).toContain('Merged into 1 entry');
+  });
+
+  it('returns a balanced reconciliation check from insights', async () => {
+    const insights = await getInsights('October 2026');
+    expect(insights.reconciliationCheck.isBalanced).toBe(true);
+    expect(insights.reconciliationCheck.partsTotal).toBe(insights.reconciliationCheck.accountTotal);
   });
 });

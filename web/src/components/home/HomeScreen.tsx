@@ -82,7 +82,7 @@ export const HomeScreen: React.FC = () => {
       <div className="p-5 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs space-y-4">
         <div>
           <span className="text-xs font-medium text-slate-600 dark:text-slate-400">
-            Safe to spend today
+            Safe to spend per day
           </span>
           <div className="flex items-baseline gap-2 mt-1">
             <span className="text-4xl font-extrabold tracking-tight text-slate-900 dark:text-slate-50 font-mono">

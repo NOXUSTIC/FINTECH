@@ -70,10 +70,17 @@ export const InsightsScreen: React.FC = () => {
         </div>
 
         {/* Reconciliation Check Badge */}
-        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/80 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 text-xs font-semibold">
-          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-          <span>Reconciliation: parts = total ✓</span>
-        </div>
+        {insights.reconciliationCheck.isBalanced ? (
+          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/80 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 text-xs font-semibold">
+            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+            <span>Reconciliation: parts = total ✓</span>
+          </div>
+        ) : (
+          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-rose-50 dark:bg-rose-950/80 border border-rose-200 dark:border-rose-800 text-rose-800 dark:text-rose-300 text-xs font-semibold">
+            <AlertCircle className="w-3.5 h-3.5 text-rose-600" />
+            <span>Reconciliation: Parts do not match total</span>
+          </div>
+        )}
       </div>
 
       {/* 1. Category Spending Donut Chart */}
