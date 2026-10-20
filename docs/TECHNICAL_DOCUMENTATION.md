@@ -52,9 +52,9 @@ The following text diagram illustrates the architectural flow of ProAct Finance 
 |   +----------------------------------+            +-----------------------------------------+   |
 |   |         api/chat.js              |            |           pricing.py (Standalone)       |   |
 |   |   - Vercel Serverless Function   |            |   - DuckDuckGo / Brave search scraper   |   |
-|   |   - Forwards to LLM_URL (vLLM)   |            |   - Structured JSON-LD / meta parser    |   |
-|   |     or ANTHROPIC_API_KEY         |            |   - Currency FX & SQLite history db     |   |
-|   |   - 3.5s timeout client fallback |            |   - Offline fallback if undeployed      |   |
+|   |   - DeepSeek chat via LLM_URL     |            |   - Structured JSON-LD / meta parser    |   |
+|   |     with LLM_KEY bearer auth      |            |   - Currency FX & SQLite history db     |   |
+|   |   - 8s timeout + mock fallback    |            |   - Offline fallback if undeployed      |   |
 |   +----------------------------------+            +-----------------------------------------+   |
 +-------------------------------------------------------------------------------------------------+
 ```
@@ -162,18 +162,23 @@ User Input / Agent Action
 ## 6. The LLM Layer with Mock Fallback
 
 1. **Default Mode**:
-   - `AI_PROVIDER_BADGE` defaults to `"Mock provider (demo mode)"`.
-   - Runs fully client-side with zero network dependencies.
-2. **Optional Live Mode**:
-   - Configured via environment variables:
-     - `LLM_URL`: Base URL for OpenAI-compatible server (vLLM, Ollama, etc.).
-     - `ANTHROPIC_API_KEY`: Anthropic API key for Claude fallback.
-     - `VITE_AI_PROVIDER`: Name displayed in the UI badge.
-3. **Resilient Network Handling**:
-   - `sendChat` executes an HTTP `POST /api/chat` with an `AbortController` timeout of **3,500ms**.
-   - If the request times out, returns HTTP 500/502, or fails network connectivity, the call fails gracefully and falls back to the deterministic local mock assistant.
-
----
+   - Runs fully client-side with zero network dependencies using the deterministic mock assistant.
+2. **Optional Live Mode (DeepSeek)**:
+   - Configured via Vercel environment variables (never committed, never exposed to the browser):
+     - `LLM_URL`: OpenAI-compatible base URL, e.g. `https://api.deepseek.com/v1`.
+     - `LLM_KEY`: Bearer token for the LLM (stored as a Vercel Secret).
+     - `LLM_MODEL`: Model name, e.g. `deepseek-chat` (no hardcoded default).
+     - `ANTHROPIC_API_KEY` / `ANTHROPIC_MODEL`: legacy fallback provider, used only when `LLM_URL` is unset.
+3. **What is sent to the model**:
+   - Only the user's free-form question plus a deterministic "computed block" of locally-calculated numbers (cash, days-to-payday, committed bills, daily baseline, safe-to-spend, savings, income, spending style).
+   - Raw SMS/transaction text, action payloads, and injection strings are handled by the local permission gate and never reach the model.
+   - A system prompt instructs the model to use only the computed numbers, never invent figures, never claim to execute actions, decline investing/loan/tax advice, and answer in under 120 words.
+4. **Resilient Network Handling**:
+   - `sendChat` POSTs to `/api/chat` with an `AbortController` timeout of **8,000ms**; the serverless function enforces the same 8s upstream timeout.
+   - `api/chat.js` applies a same-origin guard that rejects cross-origin browser requests.
+   - On timeout, non-2xx, or empty text, the app falls back to the deterministic mock assistant.
+5. **Provider badge**:
+   - The response includes a `provider` field; the chat badge shows `DeepSeek` only on a real answer, otherwise `Mock provider (demo mode)`.
 
 ## 7. Mock-versus-Real Matrix
 
@@ -185,6 +190,6 @@ User Input / Agent Action
 | **Product Pricing & Discovery** | **Fallback only, no live price service deployed** | `pricing.py` contains standalone scraper logic; in production web deployment, offline fallback is used. |
 | **Audit Hash Chain Verification** | **Real** | Real Web Crypto SHA-256 hash chaining with live tamper-evident detection (`verifyChain`). |
 | **Prompt Injection Defense** | **Rule-based filter (exact phrases)** | Regular expression filter intercepting exact override commands. |
-| **AI Provider Badge** | **Configurable** | Default `"Mock provider (demo mode)"`; switches dynamically if `VITE_AI_PROVIDER` is set. |
+| **AI Provider Badge** | **Configurable** | Chat badge shows `DeepSeek` only on a real answer, otherwise `Mock provider (demo mode)`; the purchase-check badge reads `VITE_AI_PROVIDER`. |
 | **Bank Import & Duplicate Merge** | **Simulated** | Demonstrates transaction deduplication and payload filtering on mock data. |
 | **Sandbox Transfer & Bill Payment** | **Simulated Sandbox** | Enforces ¥500 daily cap and simulated interactive PIN challenge. |
