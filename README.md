@@ -142,6 +142,10 @@ Everything in `evidence/` is reproducible: the 7-scenario execution report, a sa
 
 Actions are classified into tiers T0–T4. Some actions are blocked outright, and known risks are listed openly. See [`docs/SECURITY_SELF_ASSESSMENT.md`](docs/SECURITY_SELF_ASSESSMENT.md).
 
+## Disclaimer
+
+This project provides general budgeting and planning information.
+
 ## License
 
-Add a `LICENSE` file and name it here.
+Released under the [MIT License](LICENSE). Copyright (c) 2026 NOXUSTIC.
