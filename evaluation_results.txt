@@ -1,0 +1,47 @@
+`torch_dtype` is deprecated! Use `dtype` instead!
+The following generation flags are not valid and may be ignored: ['temperature', 'top_p', 'top_k']. Set `TRANSFORMERS_VERBOSITY=info` for more details.
+The attention mask is not set and cannot be inferred from input because pad token is same as eos token. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+numbers copied from facts: 99.7%
+answers with zero wrong numbers: 99 / 100
+------------------------------------------------------------
+WRONG: ['24,000', '5,250']
+MODEL: Your bills total ¥1,093,000 a month, which is 116% of income. The guide is 35% or less, so they are heavy.
+The largest is Rent at ¥903,750 a month (83% of all bills), followed by Water at ¥24,000 and Parking at ¥5,250.
+REF: Your bills total ¥1,093,000 a month, which is 116% of income. The guide is 35% or less, so they are heavy.
+The largest is Rent at ¥903,750 a month, 83% of all bills. Renegotiating or switching that one has the biggest impact.
+Subscriptions cost ¥13,500 a month, ¥162,000 a year.
+
+=== unseen phrasings ===
+
+Q: what's your take on my money 
+A: Your financial health score is 14 out of 100.
+You are saving -73% of your income (-¥879,375). The 20% guide needs ¥1,120,875 more per month.
+Your biggest flexible category is Dining at ¥153,150; a 20% cut frees ¥30,630.
+Bills take 129% of income, above the 35% guide.
+
+Q: so how bad is it 
+A: Your financial health score is 14 out of 100.
+You are saving -73% of your income (-¥879,375). The 20% guide needs ¥1,120,875 more per month.
+Your biggest flexible category is Dining at ¥153,150; a 20% cut frees ¥30,630.
+Bills take 129% of income, above the 35% guide.
+
+Q: ok thanks 
+A: Happy to help. You can ask me where to save, which bills to look at, whether you are on track this month, or for a plan to reach a 20% savings rate.
+
+Q: make me a plan 
+A: To reach 20% you need to find ¥1,120,875 a month. A realistic split:
+- Trim wants such as dining, shopping and entertainment by ¥87,128.
+- Renegotiate or switch bills to save about ¥124,950.
+- The remaining ¥908,798 needs extra income or a cheaper housing or transport option.
+
+Q: what should I do with my money 
+A: Your financial health score is 14 out of 100.
+You are saving -73% of your income (-¥879,375). The 20% guide needs ¥1,120,875 more per month.
+Your biggest flexible category is Dining at ¥153,150; a 20% cut frees ¥30,630.
+Bills take 129% of income, above the 35% guide.
+
+Q: explain my bills and spending 
+A: Your bills total ¥1,561,875 a month, which is 129% of income. The guide is 35% or less, so they are heavy.
+The largest is Rent at ¥1,284,000 a month, 82% of all bills. Renegotiating or switching that one has the biggest impact.
+Subscriptions cost ¥39,938 a month, ¥479,250 a year.
+Domain renewal is billed yearly at ¥83,250. Set aside ¥6,938 each month so it does not hit all at once.
